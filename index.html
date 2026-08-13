@@ -135,37 +135,66 @@
       log.scrollTop = log.scrollHeight;
     }
 
-    async function condenseText(text, apiUrl) {
-      const endpoint = apiUrl.replace(/\/$/, "") + "/api/v1/generate";
-      const prompt = `### Instruction:\nSummarize and condense the following world info entry. Retain all key facts, specifics, names, and context, but strictly keep the output brief and under 900 characters.\n\n### Input:\n${text}\n\n### Response:\n`;
+   async function condenseText(text, apiUrl) {
+  const endpoint = apiUrl.replace(/\/$/, "") + "/api/v1/generate";
+  
+  // ChatML format - much more reliable for modern instruct models
+  const prompt = `<|im_start|>system
+You are a text condensation assistant. Condense the input text into concise facts.
+CRITICAL RULES:
+- Output ONLY the condensed factual content.
+- Do NOT output the name, title, keywords, or headers.
+- Do NOT start with "Here is a summary" or repeat the title.
+- Maximum length: 800 characters.<|im_end|>
+<|im_start|>user
+Condense this lore entry, keeping all important facts:
 
-      try {
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prompt: prompt,
-            max_context_length: 2048,
-            max_length: 300,
-            temperature: 0.3,
-            stop_sequence: ["### Instruction:", "### Response:"]
-          })
-        });
+${text}<|im_end|>
+<|im_start|>assistant\n`;
 
-        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-        const data = await res.json();
-        let result = data.results[0].text.trim();
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: prompt,
+        max_context_length: 4096,
+        max_length: 400,
+        temperature: 0.1, // Super low temperature to prevent creative title-only outputs
+        top_p: 0.9,
+        stop_sequence: ["<|im_end|>", "<|im_start|>", "###"]
+      })
+    });
 
-        // Hard cap trim at 1000 chars if the AI goes slightly over
-        if (result.length > 1000) {
-          result = result.substring(0, 997) + "...";
-        }
-        return result;
-      } catch (e) {
-        logMsg(`Error summarizing: ${e.message}. Keeping original truncated to 1000 chars.`);
-        return text.substring(0, 997) + "...";
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    const data = await res.json();
+    let result = data.results[0].text.trim();
+
+    // Clean up if it still tries to echo the title line
+    if (result.startsWith("#") || result.split('\n')[0].length < 30) {
+      // If first line is super short (likely just repeating the title), check if there's more text
+      const lines = result.split('\n').filter(l => l.trim().length > 0);
+      if (lines.length > 1) {
+        result = lines.slice(1).join(' ').trim();
       }
     }
+
+    // Hard cap trim at 1000 chars if the AI goes over
+    if (result.length > 1000) {
+      result = result.substring(0, 997) + "...";
+    }
+
+    // Safety fallback: if it somehow outputted less than 10 chars, revert to raw truncated text
+    if (result.length < 10) {
+      return text.substring(0, 997) + "...";
+    }
+
+    return result;
+  } catch (e) {
+    logMsg(`Error summarizing: ${e.message}. Keeping original truncated to 1000 chars.`);
+    return text.substring(0, 997) + "...";
+  }
+}
 
     document.getElementById('startBtn').addEventListener('click', async () => {
       let apiUrl = document.getElementById('apiUrl').value.trim();
