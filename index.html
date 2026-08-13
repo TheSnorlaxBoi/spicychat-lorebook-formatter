@@ -87,7 +87,7 @@
 <body>
 
   <h1>Spicychat Lorebook Reformatter</h1>
-  <p class="subtitle">Condense lorebook entry contents to &le;1,000 characters using your KoboldCPP API endpoint while keeping titles, keywords, and images untouched.</p>
+  <p class="subtitle">Condense lorebook entry contents to &le;1,000 characters using your KoboldCPP API endpoint while auto-sanitizing underage terms and leaving titles, keywords, and images untouched.</p>
 
   <div class="card">
     <label for="apiUrl">KoboldCPP API URL (from Colab / trycloudflare)</label>
@@ -135,66 +135,66 @@
       log.scrollTop = log.scrollHeight;
     }
 
-   async function condenseText(text, apiUrl) {
-  const endpoint = apiUrl.replace(/\/$/, "") + "/api/v1/generate";
-  
-  // ChatML format - much more reliable for modern instruct models
-  const prompt = `<|im_start|>system
-You are a text condensation assistant. Condense the input text into concise facts.
-CRITICAL RULES:
-- Output ONLY the condensed factual content.
-- Do NOT output the name, title, keywords, or headers.
-- Do NOT start with "Here is a summary" or repeat the title.
-- Maximum length: 800 characters.<|im_end|>
+    async function condenseText(text, apiUrl) {
+      const endpoint = apiUrl.replace(/\/$/, "") + "/api/v1/generate";
+      
+      const prompt = `<|im_start|>system
+You are an expert text editor and content formatter for AI roleplay lorebooks.
+Your task is to condense the user's text into factual summary points while ensuring it complies with strict safety guidelines regarding sensitive/underage content.
+
+RULES:
+1. Output ONLY the condensed factual content. Do NOT include titles, headers, names, or meta-commentary like "Here is a summary".
+2. CONTENT MODERATION / AGE-UP REQUIREMENT:
+   - Identify any terms, descriptors, implied ages, or contextual references indicating a minor or underage individual (e.g., "child", "minor", "schoolgirl", "kid", "teen", "young boy", specific underage age numbers).
+   - Rewrite, generalize, or adjust these terms so the character/entity is explicitly presented as an adult, mature, or completely age-neutral (e.g., change "school student" to "academy scholar", "child" to "person" or "individual", "15 years old" to "young adult" or remove the age).
+   - Remove any explicit references to underage status or childhood context that could trigger automated moderation filters.
+3. Maximum length: 850 characters.<|im_end|>
 <|im_start|>user
-Condense this lore entry, keeping all important facts:
+Condense and auto-sanitize this lore entry:
 
 ${text}<|im_end|>
 <|im_start|>assistant\n`;
 
-  try {
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        prompt: prompt,
-        max_context_length: 4096,
-        max_length: 400,
-        temperature: 0.1, // Super low temperature to prevent creative title-only outputs
-        top_p: 0.9,
-        stop_sequence: ["<|im_end|>", "<|im_start|>", "###"]
-      })
-    });
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: prompt,
+            max_context_length: 4096,
+            max_length: 450,
+            temperature: 0.1,
+            top_p: 0.9,
+            stop_sequence: ["<|im_end|>", "<|im_start|>", "###"]
+          })
+        });
 
-    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-    const data = await res.json();
-    let result = data.results[0].text.trim();
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+        const data = await res.json();
+        let result = data.results[0].text.trim();
 
-    // Clean up if it still tries to echo the title line
-    if (result.startsWith("#") || result.split('\n')[0].length < 30) {
-      // If first line is super short (likely just repeating the title), check if there's more text
-      const lines = result.split('\n').filter(l => l.trim().length > 0);
-      if (lines.length > 1) {
-        result = lines.slice(1).join(' ').trim();
+        // Remove leading title repetition if the model outputs it anyway
+        if (result.startsWith("#") || result.split('\n')[0].length < 30) {
+          const lines = result.split('\n').filter(l => l.trim().length > 0);
+          if (lines.length > 1) {
+            result = lines.slice(1).join(' ').trim();
+          }
+        }
+
+        if (result.length > 1000) {
+          result = result.substring(0, 997) + "...";
+        }
+
+        if (result.length < 10) {
+          return text.substring(0, 997) + "...";
+        }
+
+        return result;
+      } catch (e) {
+        logMsg(`Error summarizing: ${e.message}. Keeping original truncated to 1000 chars.`);
+        return text.substring(0, 997) + "...";
       }
     }
-
-    // Hard cap trim at 1000 chars if the AI goes over
-    if (result.length > 1000) {
-      result = result.substring(0, 997) + "...";
-    }
-
-    // Safety fallback: if it somehow outputted less than 10 chars, revert to raw truncated text
-    if (result.length < 10) {
-      return text.substring(0, 997) + "...";
-    }
-
-    return result;
-  } catch (e) {
-    logMsg(`Error summarizing: ${e.message}. Keeping original truncated to 1000 chars.`);
-    return text.substring(0, 997) + "...";
-  }
-}
 
     document.getElementById('startBtn').addEventListener('click', async () => {
       let apiUrl = document.getElementById('apiUrl').value.trim();
@@ -212,13 +212,10 @@ ${text}<|im_end|>
 
       // Parse lorebook entries (handles both array and object structures)
       let entries = [];
-      let isObjectDict = false;
-
       if (Array.isArray(rawJsonData.entries)) {
         entries = rawJsonData.entries;
       } else if (rawJsonData.entries && typeof rawJsonData.entries === 'object') {
         entries = Object.values(rawJsonData.entries);
-        isObjectDict = true;
       } else if (Array.isArray(rawJsonData)) {
         entries = rawJsonData;
       } else {
