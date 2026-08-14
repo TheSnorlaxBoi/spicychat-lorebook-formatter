@@ -6,108 +6,244 @@
   <title>Spicychat Lorebook Formatter</title>
   <style>
     :root {
-      --bg: #12131c;
-      --card: #1c1e2d;
+      --bg: #0b0c10;
+      --card-bg: rgba(23, 27, 40, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
       --accent: #ff477e;
+      --accent-glow: rgba(255, 71, 126, 0.35);
       --accent-hover: #ff2a66;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --border: #2e3248;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --input-bg: #121520;
+      --border-focus: #ff477e;
+      --radius: 12px;
     }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: var(--bg);
-      color: var(--text);
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 0 20px;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(255, 71, 126, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
     }
-    h1 { color: #fff; margin-bottom: 8px; }
-    p.subtitle { color: var(--muted); margin-bottom: 24px; }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    label { display: block; font-weight: 600; margin-bottom: 8px; }
-    input[type="text"], input[type="file"] {
+
+    .container {
       width: 100%;
-      padding: 10px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text);
-      box-sizing: border-box;
-      margin-bottom: 12px;
+      max-width: 760px;
     }
-    .btn {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      width: 100%;
-      font-size: 1rem;
-      transition: background 0.2s;
+
+    header {
+      margin-bottom: 32px;
+      text-align: center;
     }
-    .btn:hover { background: var(--accent-hover); }
-    .btn:disabled { background: #555; cursor: not-allowed; }
-    #progress-container { margin-top: 15px; display: none; }
-    .progress-bar-bg {
-      background: var(--bg);
-      height: 12px;
-      border-radius: 6px;
-      overflow: hidden;
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff 30%, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       margin-bottom: 8px;
     }
-    .progress-bar {
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .field-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    input[type="text"], input[type="file"] {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    input[type="file"]::file-selector-button {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-right: 12px;
+      transition: background 0.2s ease;
+    }
+
+    input[type="file"]::file-selector-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn {
       background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 4px 20px var(--accent-glow);
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px var(--accent-glow);
+    }
+
+    .btn:disabled {
+      background: #2a2e3d;
+      color: #64748b;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* Progress & Status */
+    #progress-container {
+      margin-top: 20px;
+      display: none;
+    }
+
+    .progress-bar-bg {
+      background: var(--input-bg);
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      border: 1px solid var(--card-border);
+    }
+
+    .progress-bar {
+      background: linear-gradient(90deg, var(--accent), #a855f7);
       height: 100%;
       width: 0%;
-      transition: width 0.3s;
+      transition: width 0.3s ease;
     }
-    #log {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      padding: 10px;
-      height: 180px;
-      overflow-y: auto;
-      font-family: monospace;
+
+    #statusText {
       font-size: 0.85rem;
-      border-radius: 6px;
-      color: var(--muted);
-      margin-top: 15px;
+      color: var(--text-muted);
+      text-align: center;
+      font-weight: 500;
     }
+
+    /* Logs Area */
+    #logCard {
+      display: none;
+    }
+
+    #log {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      padding: 14px;
+      height: 200px;
+      overflow-y: auto;
+      font-family: "Fira Code", Monaco, Consolas, monospace;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      border-radius: 8px;
+      color: var(--text-muted);
+    }
+
+    #log div {
+      margin-bottom: 4px;
+      word-break: break-all;
+    }
+
+    #log div.warn { color: #f59e0b; }
+    #log div.success { color: #10b981; }
+
+    /* Custom Scrollbar */
+    #log::-webkit-scrollbar { width: 6px; }
+    #log::-webkit-scrollbar-track { background: transparent; }
+    #log::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
   </style>
 </head>
 <body>
 
-  <h1>Spicychat Lorebook Reformatter</h1>
-  <p class="subtitle">Condense lorebook entry contents to &le;1,000 characters using your KoboldCPP API endpoint while auto-sanitizing underage terms and leaving titles, keywords, and images untouched.</p>
+  <div class="container">
+    <header>
+      <h1>Spicychat Lorebook Reformatter</h1>
+      <p class="subtitle">Condense entries to &le;2,000 chars, purge entries under 100 chars, auto-sanitize underage context, and export clean JSON.</p>
+    </header>
 
-  <div class="card">
-    <label for="apiUrl">KoboldCPP API URL (from Colab / trycloudflare)</label>
-    <input type="text" id="apiUrl" placeholder="https://xxxx-xxx-xxx.trycloudflare.com or http://localhost:5001" />
+    <div class="card">
+      <div class="field-group">
+        <label for="apiUrl">KoboldCPP API URL (Colab / trycloudflare)</label>
+        <input type="text" id="apiUrl" placeholder="https://xxxx-xxx-xxx.trycloudflare.com or http://localhost:5001" />
+      </div>
 
-    <label for="fileInput">Select Lorebook JSON File</label>
-    <input type="file" id="fileInput" accept=".json" />
+      <div class="field-group">
+        <label for="fileInput">Lorebook JSON File</label>
+        <input type="file" id="fileInput" accept=".json" />
+      </div>
 
-    <button id="startBtn" class="btn">Process Lorebook</button>
+      <button id="startBtn" class="btn">Process Lorebook</button>
 
-    <div id="progress-container">
-      <div class="progress-bar-bg"><div id="progress-bar" class="progress-bar"></div></div>
-      <div id="statusText" style="font-size: 0.9rem; text-align: center;">Processing 0 / 0...</div>
+      <div id="progress-container">
+        <div class="progress-bar-bg"><div id="progress-bar" class="progress-bar"></div></div>
+        <div id="statusText">Processing 0 / 0...</div>
+      </div>
     </div>
-  </div>
 
-  <div class="card" id="logCard" style="display:none;">
-    <label>Process Logs</label>
-    <div id="log"></div>
-    <button id="downloadBtn" class="btn" style="margin-top: 15px; display: none;">Download Formatted JSON</button>
+    <div class="card" id="logCard">
+      <label>Process Logs</label>
+      <div id="log"></div>
+      <button id="downloadBtn" class="btn" style="margin-top: 16px; display: none; background: #10b981; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);">Download Formatted JSON</button>
+    </div>
   </div>
 
   <script>
@@ -128,10 +264,13 @@
       reader.readAsText(file);
     });
 
-    function logMsg(msg) {
+    function logMsg(msg, type = '') {
       const log = document.getElementById('log');
       document.getElementById('logCard').style.display = 'block';
-      log.innerHTML += `<div>> ${msg}</div>`;
+      const div = document.createElement('div');
+      if (type) div.classList.add(type);
+      div.textContent = `> ${msg}`;
+      log.appendChild(div);
       log.scrollTop = log.scrollHeight;
     }
 
@@ -148,7 +287,7 @@ RULES:
    - Identify any terms, descriptors, implied ages, or contextual references indicating a minor or underage individual (e.g., "child", "minor", "schoolgirl", "kid", "teen", "young boy", specific underage age numbers).
    - Rewrite, generalize, or adjust these terms so the character/entity is explicitly presented as an adult, mature, or completely age-neutral (e.g., change "school student" to "academy scholar", "child" to "person" or "individual", "15 years old" to "young adult" or remove the age).
    - Remove any explicit references to underage status or childhood context that could trigger automated moderation filters.
-3. Maximum length: 850 characters.<|im_end|>
+3. Maximum length: 1850 characters.<|im_end|>
 <|im_start|>user
 Condense and auto-sanitize this lore entry:
 
@@ -162,7 +301,7 @@ ${text}<|im_end|>
           body: JSON.stringify({
             prompt: prompt,
             max_context_length: 4096,
-            max_length: 450,
+            max_length: 800,
             temperature: 0.1,
             top_p: 0.9,
             stop_sequence: ["<|im_end|>", "<|im_start|>", "###"]
@@ -173,7 +312,7 @@ ${text}<|im_end|>
         const data = await res.json();
         let result = data.results[0].text.trim();
 
-        // Remove leading title repetition if the model outputs it anyway
+        // Remove leading title repetition if model regurgitates it
         if (result.startsWith("#") || result.split('\n')[0].length < 30) {
           const lines = result.split('\n').filter(l => l.trim().length > 0);
           if (lines.length > 1) {
@@ -181,18 +320,18 @@ ${text}<|im_end|>
           }
         }
 
-        if (result.length > 1000) {
-          result = result.substring(0, 997) + "...";
+        if (result.length > 2000) {
+          result = result.substring(0, 1997) + "...";
         }
 
         if (result.length < 10) {
-          return text.substring(0, 997) + "...";
+          return text.substring(0, 1997) + "...";
         }
 
         return result;
       } catch (e) {
-        logMsg(`Error summarizing: ${e.message}. Keeping original truncated to 1000 chars.`);
-        return text.substring(0, 997) + "...";
+        logMsg(`Error summarizing: ${e.message}. Keeping original truncated to 2000 chars.`, 'warn');
+        return text.substring(0, 1997) + "...";
       }
     }
 
@@ -212,42 +351,75 @@ ${text}<|im_end|>
 
       // Parse lorebook entries (handles both array and object structures)
       let entries = [];
+      let isObjectStructure = false;
+
       if (Array.isArray(rawJsonData.entries)) {
         entries = rawJsonData.entries;
       } else if (rawJsonData.entries && typeof rawJsonData.entries === 'object') {
         entries = Object.values(rawJsonData.entries);
+        isObjectStructure = true;
       } else if (Array.isArray(rawJsonData)) {
         entries = rawJsonData;
       } else {
-        alert("Could not identify entries array in JSON.");
+        alert("Could not identify entries structure in JSON.");
         document.getElementById('startBtn').disabled = false;
         return;
       }
 
-      const total = entries.length;
-      logMsg(`Starting processing for ${total} entries...`);
+      const totalInitial = entries.length;
+      logMsg(`Loaded ${totalInitial} initial entries. Cleaning up short entries (< 100 chars)...`);
+
+      // 1. Automatically delete entries under 100 characters
+      let keptEntries = [];
+      let deletedCount = 0;
+
+      for (let entry of entries) {
+        let content = entry.content || entry.text || "";
+        if (content.trim().length < 100) {
+          deletedCount++;
+          logMsg(`Deleted entry "${entry.comment || entry.name || 'Untitled'}" (${content.trim().length} chars < 100 chars)`, 'warn');
+        } else {
+          keptEntries.push(entry);
+        }
+      }
+
+      logMsg(`Purged ${deletedCount} tiny entries. ${keptEntries.length} entries remain for AI processing.`, 'success');
+
+      // 2. Condense remaining entries over 2000 chars
+      const total = keptEntries.length;
 
       for (let i = 0; i < total; i++) {
-        let entry = entries[i];
+        let entry = keptEntries[i];
         let content = entry.content || entry.text || "";
 
-        if (content.length > 1000) {
+        if (content.length > 2000) {
           logMsg(`Entry ${i + 1}/${total} ("${entry.comment || entry.name || 'Untitled'}") is ${content.length} chars. Condensing...`);
           let condensed = await condenseText(content, apiUrl);
           
           if (entry.content !== undefined) entry.content = condensed;
           if (entry.text !== undefined) entry.text = condensed;
         } else {
-          logMsg(`Entry ${i + 1}/${total} is already under 1000 chars (${content.length} chars). Skipped.`);
+          logMsg(`Entry ${i + 1}/${total} ("${entry.comment || entry.name || 'Untitled'}") is already <= 2000 chars (${content.length} chars). Skipped.`);
         }
 
-        // Update progress
+        // Update progress UI
         const percent = Math.round(((i + 1) / total) * 100);
         document.getElementById('progress-bar').style.width = percent + "%";
         document.getElementById('statusText').innerText = `Processed ${i + 1} / ${total} (${percent}%)`;
       }
 
-      logMsg("All entries processed!");
+      // Re-assign processed entries back to original structure
+      if (Array.isArray(rawJsonData.entries)) {
+        rawJsonData.entries = keptEntries;
+      } else if (isObjectStructure) {
+        let newObj = {};
+        keptEntries.forEach((e, idx) => { newObj[idx] = e; });
+        rawJsonData.entries = newObj;
+      } else if (Array.isArray(rawJsonData)) {
+        rawJsonData = keptEntries;
+      }
+
+      logMsg("All entries processed successfully!", 'success');
       
       const downloadBtn = document.getElementById('downloadBtn');
       downloadBtn.style.display = 'block';
