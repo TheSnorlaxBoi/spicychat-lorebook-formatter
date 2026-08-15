@@ -35,15 +35,8 @@
       padding: 40px 20px;
     }
 
-    .container {
-      width: 100%;
-      max-width: 760px;
-    }
-
-    header {
-      margin-bottom: 32px;
-      text-align: center;
-    }
+    .container { width: 100%; max-width: 760px; }
+    header { margin-bottom: 32px; text-align: center; }
 
     h1 {
       font-size: 2.2rem;
@@ -55,11 +48,7 @@
       margin-bottom: 8px;
     }
 
-    p.subtitle {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
+    p.subtitle { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; }
 
     .card {
       background: var(--card-bg);
@@ -70,12 +59,9 @@
       padding: 24px;
       margin-bottom: 24px;
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-      transition: transform 0.2s ease, border-color 0.2s ease;
     }
 
-    .field-group {
-      margin-bottom: 20px;
-    }
+    .field-group { margin-bottom: 20px; }
 
     label {
       display: block;
@@ -115,9 +101,7 @@
       transition: background 0.2s ease;
     }
 
-    input[type="file"]::file-selector-button:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
+    input[type="file"]::file-selector-button:hover { background: rgba(255, 255, 255, 0.2); }
 
     .btn {
       background: var(--accent);
@@ -151,11 +135,19 @@
       transform: none;
     }
 
-    /* Progress & Status */
-    #progress-container {
-      margin-top: 20px;
-      display: none;
+    .btn-secondary {
+      background: #334155;
+      box-shadow: none;
     }
+    .btn-secondary:hover { background: #475569; box-shadow: none; }
+
+    .btn-danger {
+      background: #ef4444;
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+    }
+    .btn-danger:hover { background: #dc2626; }
+
+    #progress-container { margin-top: 20px; display: none; }
 
     .progress-bar-bg {
       background: var(--input-bg);
@@ -173,17 +165,9 @@
       transition: width 0.3s ease;
     }
 
-    #statusText {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      text-align: center;
-      font-weight: 500;
-    }
+    #statusText { font-size: 0.85rem; color: var(--text-muted); text-align: center; font-weight: 500; }
 
-    /* Logs Area */
-    #logCard {
-      display: none;
-    }
+    #logCard { display: none; }
 
     #log {
       background: var(--input-bg);
@@ -198,18 +182,72 @@
       color: var(--text-muted);
     }
 
-    #log div {
-      margin-bottom: 4px;
-      word-break: break-all;
-    }
-
+    #log div { margin-bottom: 4px; word-break: break-all; }
     #log div.warn { color: #f59e0b; }
     #log div.success { color: #10b981; }
 
-    /* Custom Scrollbar */
-    #log::-webkit-scrollbar { width: 6px; }
-    #log::-webkit-scrollbar-track { background: transparent; }
-    #log::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+    /* Modal / Prune UI */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      width: 90%;
+      max-width: 700px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .modal-title { font-size: 1.25rem; font-weight: 700; }
+
+    .entry-list {
+      overflow-y: auto;
+      flex-grow: 1;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .entry-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.9rem;
+    }
+
+    .entry-item:last-child { border-bottom: none; }
+    .entry-info { display: flex; flex-direction: column; }
+    .entry-name { font-weight: 600; color: var(--text-main); }
+    .entry-meta { font-size: 0.75rem; color: var(--text-muted); }
+
+    .modal-actions { display: flex; gap: 12px; }
+
+    #log::-webkit-scrollbar, .entry-list::-webkit-scrollbar { width: 6px; }
+    #log::-webkit-scrollbar-thumb, .entry-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
   </style>
 </head>
 <body>
@@ -217,7 +255,7 @@
   <div class="container">
     <header>
       <h1>Spicychat Lorebook Reformatter</h1>
-      <p class="subtitle">Condense entries to &le;2,000 chars, purge entries under 100 chars, auto-sanitize underage context, and export clean JSON.</p>
+      <p class="subtitle">Purge tiny entries, strip keywords &lt; 3 chars, condense text &le; 2,000 chars, and review excess entries.</p>
     </header>
 
     <div class="card">
@@ -246,8 +284,27 @@
     </div>
   </div>
 
+  <!-- Prune Modal for > 500 Entries -->
+  <div class="modal-overlay" id="pruneModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Lorebook Exceeds 500 Entries (<span id="modalCount">0</span>)</div>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+        Spicychat lorebooks perform best under 500 entries. Select entries to delete, or use auto-purge to cut down to 500.
+      </p>
+      <div class="entry-list" id="entryListContainer"></div>
+      <div class="modal-actions">
+        <button id="autoPurgeBtn" class="btn btn-danger">Purge Excess Entries (Cut to 500)</button>
+        <button id="confirmPruneBtn" class="btn">Done & Keep Selected</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let rawJsonData = null;
+    let finalEntries = [];
+    let isObjectStructure = false;
 
     document.getElementById('fileInput').addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -272,6 +329,20 @@
       div.textContent = `> ${msg}`;
       log.appendChild(div);
       log.scrollTop = log.scrollHeight;
+    }
+
+    function cleanKeywords(keys, fallbackName) {
+      if (!keys) return [fallbackName || "Lore"];
+      
+      let keyArr = Array.isArray(keys) ? keys : String(keys).split(',').map(s => s.trim());
+      // Filter out keywords less than 3 characters long
+      let cleaned = keyArr.filter(k => k.length >= 3);
+      
+      // If no valid keywords remain, fallback to entry name or generic string
+      if (cleaned.length === 0) {
+        cleaned = [fallbackName || "Lore"];
+      }
+      return Array.isArray(keys) ? cleaned : cleaned.join(', ');
     }
 
     async function condenseText(text, apiUrl) {
@@ -312,7 +383,6 @@ ${text}<|im_end|>
         const data = await res.json();
         let result = data.results[0].text.trim();
 
-        // Remove leading title repetition if model regurgitates it
         if (result.startsWith("#") || result.split('\n')[0].length < 30) {
           const lines = result.split('\n').filter(l => l.trim().length > 0);
           if (lines.length > 1) {
@@ -349,9 +419,8 @@ ${text}<|im_end|>
       document.getElementById('startBtn').disabled = true;
       document.getElementById('progress-container').style.display = 'block';
 
-      // Parse lorebook entries (handles both array and object structures)
       let entries = [];
-      let isObjectStructure = false;
+      isObjectStructure = false;
 
       if (Array.isArray(rawJsonData.entries)) {
         entries = rawJsonData.entries;
@@ -366,24 +435,29 @@ ${text}<|im_end|>
         return;
       }
 
-      const totalInitial = entries.length;
-      logMsg(`Loaded ${totalInitial} initial entries. Cleaning up short entries (< 100 chars)...`);
+      logMsg(`Loaded ${entries.length} initial entries. Processing short entries & keywords...`);
 
-      // 1. Automatically delete entries under 100 characters
       let keptEntries = [];
       let deletedCount = 0;
 
+      // 1. Purge entries < 100 chars & Clean Keywords < 3 chars
       for (let entry of entries) {
         let content = entry.content || entry.text || "";
         if (content.trim().length < 100) {
           deletedCount++;
           logMsg(`Deleted entry "${entry.comment || entry.name || 'Untitled'}" (${content.trim().length} chars < 100 chars)`, 'warn');
         } else {
+          // Clean keywords (< 3 chars stripped)
+          let title = entry.comment || entry.name || "Lore";
+          if (entry.keys !== undefined) entry.keys = cleanKeywords(entry.keys, title);
+          if (entry.keywords !== undefined) entry.keywords = cleanKeywords(entry.keywords, title);
+          if (entry.key !== undefined) entry.key = cleanKeywords(entry.key, title);
+
           keptEntries.push(entry);
         }
       }
 
-      logMsg(`Purged ${deletedCount} tiny entries. ${keptEntries.length} entries remain for AI processing.`, 'success');
+      logMsg(`Purged ${deletedCount} tiny entries. Cleaned keywords under 3 chars.`, 'success');
 
       // 2. Condense remaining entries over 2000 chars
       const total = keptEntries.length;
@@ -402,24 +476,82 @@ ${text}<|im_end|>
           logMsg(`Entry ${i + 1}/${total} ("${entry.comment || entry.name || 'Untitled'}") is already <= 2000 chars (${content.length} chars). Skipped.`);
         }
 
-        // Update progress UI
         const percent = Math.round(((i + 1) / total) * 100);
         document.getElementById('progress-bar').style.width = percent + "%";
         document.getElementById('statusText').innerText = `Processed ${i + 1} / ${total} (${percent}%)`;
       }
 
-      // Re-assign processed entries back to original structure
+      finalEntries = keptEntries;
+
+      // 3. Check if > 500 entries, prompt manual/auto pruning
+      if (finalEntries.length > 500) {
+        logMsg(`Warning: ${finalEntries.length} entries remains (> 500). Opening Prune Menu...`, 'warn');
+        showPruneModal();
+      } else {
+        finishProcessing();
+      }
+    });
+
+    function showPruneModal() {
+      const modal = document.getElementById('pruneModal');
+      const container = document.getElementById('entryListContainer');
+      document.getElementById('modalCount').innerText = finalEntries.length;
+      container.innerHTML = '';
+
+      finalEntries.forEach((entry, idx) => {
+        let title = entry.comment || entry.name || `Entry ${idx + 1}`;
+        let len = (entry.content || entry.text || "").length;
+
+        let div = document.createElement('div');
+        div.className = 'entry-item';
+        div.innerHTML = `
+          <div class="entry-info">
+            <span class="entry-name">${title}</span>
+            <span class="entry-meta">${len} chars</span>
+          </div>
+          <input type="checkbox" class="entry-check" data-idx="${idx}" checked />
+        `;
+        container.appendChild(div);
+      });
+
+      modal.style.display = 'flex';
+    }
+
+    document.getElementById('autoPurgeBtn').addEventListener('click', () => {
+      if (confirm("Automatically remove excess entries beyond 500?")) {
+        finalEntries = finalEntries.slice(0, 500);
+        document.getElementById('pruneModal').style.display = 'none';
+        logMsg(`Auto-purged down to 500 entries.`, 'warn');
+        finishProcessing();
+      }
+    });
+
+    document.getElementById('confirmPruneBtn').addEventListener('click', () => {
+      const checkboxes = document.querySelectorAll('.entry-check');
+      let filtered = [];
+      checkboxes.forEach(cb => {
+        if (cb.checked) {
+          filtered.push(finalEntries[parseInt(cb.dataset.idx)]);
+        }
+      });
+      finalEntries = filtered;
+      document.getElementById('pruneModal').style.display = 'none';
+      logMsg(`Manually pruned to ${finalEntries.length} entries.`, 'success');
+      finishProcessing();
+    });
+
+    function finishProcessing() {
       if (Array.isArray(rawJsonData.entries)) {
-        rawJsonData.entries = keptEntries;
+        rawJsonData.entries = finalEntries;
       } else if (isObjectStructure) {
         let newObj = {};
-        keptEntries.forEach((e, idx) => { newObj[idx] = e; });
+        finalEntries.forEach((e, idx) => { newObj[idx] = e; });
         rawJsonData.entries = newObj;
       } else if (Array.isArray(rawJsonData)) {
-        rawJsonData = keptEntries;
+        rawJsonData = finalEntries;
       }
 
-      logMsg("All entries processed successfully!", 'success');
+      logMsg(`All tasks finished! Final entry count: ${finalEntries.length}`, 'success');
       
       const downloadBtn = document.getElementById('downloadBtn');
       downloadBtn.style.display = 'block';
@@ -434,7 +566,7 @@ ${text}<|im_end|>
       };
 
       document.getElementById('startBtn').disabled = false;
-    });
+    }
   </script>
 </body>
 </html>
