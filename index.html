@@ -103,6 +103,38 @@
 
     input[type="file"]::file-selector-button:hover { background: rgba(255, 255, 255, 0.2); }
 
+    /* Checkbox Options */
+    .options-group {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-transform: none;
+      letter-spacing: normal;
+      color: var(--text-main);
+      cursor: pointer;
+      margin-bottom: 0;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+      accent-color: var(--accent);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
     .btn {
       background: var(--accent);
       color: #fff;
@@ -135,10 +167,7 @@
       transform: none;
     }
 
-    .btn-secondary {
-      background: #334155;
-      box-shadow: none;
-    }
+    .btn-secondary { background: #334155; box-shadow: none; }
     .btn-secondary:hover { background: #475569; box-shadow: none; }
 
     .btn-danger {
@@ -255,7 +284,7 @@
   <div class="container">
     <header>
       <h1>Spicychat Lorebook Reformatter</h1>
-      <p class="subtitle">Purge tiny entries, strip keywords &lt; 3 chars, condense text &le; 2,000 chars, and review excess entries.</p>
+      <p class="subtitle">Condense lorebook entries, strip short keywords, purge tiny entries, and manage large files for Spicychat.ai</p>
     </header>
 
     <div class="card">
@@ -267,6 +296,18 @@
       <div class="field-group">
         <label for="fileInput">Lorebook JSON File</label>
         <input type="file" id="fileInput" accept=".json" />
+      </div>
+
+      <label>Pre-Processing Options</label>
+      <div class="options-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="chkPurgeShort" checked />
+          Purge tiny entries (less than 100 characters)
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="chkStripKeywords" checked />
+          Strip keywords under 3 characters
+        </label>
       </div>
 
       <button id="startBtn" class="btn">Process Lorebook</button>
@@ -335,10 +376,8 @@
       if (!keys) return [fallbackName || "Lore"];
       
       let keyArr = Array.isArray(keys) ? keys : String(keys).split(',').map(s => s.trim());
-      // Filter out keywords less than 3 characters long
       let cleaned = keyArr.filter(k => k.length >= 3);
       
-      // If no valid keywords remain, fallback to entry name or generic string
       if (cleaned.length === 0) {
         cleaned = [fallbackName || "Lore"];
       }
@@ -416,6 +455,9 @@ ${text}<|im_end|>
         return;
       }
 
+      const purgeShort = document.getElementById('chkPurgeShort').checked;
+      const stripKeywords = document.getElementById('chkStripKeywords').checked;
+
       document.getElementById('startBtn').disabled = true;
       document.getElementById('progress-container').style.display = 'block';
 
@@ -435,29 +477,44 @@ ${text}<|im_end|>
         return;
       }
 
-      logMsg(`Loaded ${entries.length} initial entries. Processing short entries & keywords...`);
+      logMsg(`Loaded ${entries.length} initial entries. Processing options...`);
 
       let keptEntries = [];
       let deletedCount = 0;
 
-      // 1. Purge entries < 100 chars & Clean Keywords < 3 chars
+      // 1. Run Pre-Processing
       for (let entry of entries) {
         let content = entry.content || entry.text || "";
-        if (content.trim().length < 100) {
+        
+        // Option 1: Purge entries < 100 chars
+        if (purgeShort && content.trim().length < 100) {
           deletedCount++;
           logMsg(`Deleted entry "${entry.comment || entry.name || 'Untitled'}" (${content.trim().length} chars < 100 chars)`, 'warn');
-        } else {
-          // Clean keywords (< 3 chars stripped)
+          continue;
+        }
+
+        // Option 2: Clean keywords < 3 chars
+        if (stripKeywords) {
           let title = entry.comment || entry.name || "Lore";
           if (entry.keys !== undefined) entry.keys = cleanKeywords(entry.keys, title);
           if (entry.keywords !== undefined) entry.keywords = cleanKeywords(entry.keywords, title);
           if (entry.key !== undefined) entry.key = cleanKeywords(entry.key, title);
-
-          keptEntries.push(entry);
         }
+
+        keptEntries.push(entry);
       }
 
-      logMsg(`Purged ${deletedCount} tiny entries. Cleaned keywords under 3 chars.`, 'success');
+      if (purgeShort) {
+        logMsg(`Purged ${deletedCount} tiny entries.`, 'success');
+      } else {
+        logMsg(`Skipped tiny entry purging (disabled).`);
+      }
+
+      if (stripKeywords) {
+        logMsg(`Cleaned keywords under 3 characters.`, 'success');
+      } else {
+        logMsg(`Skipped keyword stripping (disabled).`);
+      }
 
       // 2. Condense remaining entries over 2000 chars
       const total = keptEntries.length;
